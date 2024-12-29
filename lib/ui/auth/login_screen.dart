@@ -1,5 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:test_cli/ui/auth/signup.dart';
 import 'package:test_cli/widget/button.dart';
+
+import '../../utils/utils.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,6 +17,37 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final _auth = FirebaseAuth.instance;
+  bool _isLoading = false;
+  
+  Future<void> login() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        setState(() {
+          _isLoading = true;
+        });
+        await _auth.signInWithEmailAndPassword(email: _emailController.text.trim(), password: _passwordController.text.trim(),);
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        // Additional steps like storing the user's name and phone in Firestore can be done here.
+
+        Utils().toastMessage("Registration Successfull",Colors.greenAccent,Colors.white);
+
+        // Navigate to another page or clear inputs.
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        Utils().toastMessage(e.toString(),Colors.red,Colors.white);
+
+      }
+    }
+  }
+  
+
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +125,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 }
 
 
-              })
+              },),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text("Don't Have Account?"),
+                  TextButton(
+
+                      onPressed: () => Navigator.push(context,MaterialPageRoute(builder: (context) => SignupScreen(),),) , child: Text("Signup"))
+
+
+                ],
+              )
             ],
           ),
         ),
