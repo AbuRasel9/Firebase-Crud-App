@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "885977086701",
+    "project_id": "testcli-89d83",
+    "storage_bucket": "testcli-89d83.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:885977086701:android:3818e4a6b676c5bf6feae4",
+        "android_client_info": {
+          "package_name": "com.rasel.test_cli"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjLy_ZNcWrf4fXH2xz4SfjE8Sp75D_lKs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
