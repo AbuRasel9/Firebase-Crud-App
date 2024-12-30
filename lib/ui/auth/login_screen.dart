@@ -1,6 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:test_cli/model/user_model.dart';
+import 'package:test_cli/provider/login_provider.dart';
 import 'package:test_cli/ui/auth/signup.dart';
+import 'package:test_cli/ui/otp/phone_number_auth_screen.dart';
 import 'package:test_cli/widget/button.dart';
 
 import '../../utils/utils.dart';
@@ -19,39 +23,37 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _auth = FirebaseAuth.instance;
   bool _isLoading = false;
-  
-  Future<void> login() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        setState(() {
-          _isLoading = true;
-        });
-        await _auth.signInWithEmailAndPassword(email: _emailController.text.trim(), password: _passwordController.text.trim(),);
 
-        setState(() {
-          _isLoading = false;
-        });
-
-        // Additional steps like storing the user's name and phone in Firestore can be done here.
-
-        Utils().toastMessage("Registration Successfull",Colors.greenAccent,Colors.white);
-
-        // Navigate to another page or clear inputs.
-      } catch (e) {
-        setState(() {
-          _isLoading = false;
-        });
-        Utils().toastMessage(e.toString(),Colors.red,Colors.white);
-
-      }
-    }
-  }
-  
-
+  // Future<void> login() async {
+  //   if (_formKey.currentState!.validate()) {
+  //     try {
+  //       setState(() {
+  //         _isLoading = true;
+  //       });
+  //       await _auth.signInWithEmailAndPassword(email: _emailController.text.trim(), password: _passwordController.text.trim(),);
+  //
+  //       setState(() {
+  //         _isLoading = false;
+  //       });
+  //
+  //       // Additional steps like storing the user's name and phone in Firestore can be done here.
+  //
+  //       Utils().toastMessage("Registration Successfull",Colors.greenAccent,Colors.white);
+  //
+  //       // Navigate to another page or clear inputs.
+  //     } catch (e) {
+  //       setState(() {
+  //         _isLoading = false;
+  //       });
+  //       Utils().toastMessage(e.toString(),Colors.red,Colors.white);
+  //
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
-
+    final authProvider = Provider.of<LoginProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -86,15 +88,17 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               TextFormField(
                 controller: _passwordController,
-
                 keyboardType: TextInputType.text,
                 obscureText: _showPassword,
-                validator: (value) {
-                  if (value?.isEmpty ?? false) {
-                    return "Enter Password";
-                  }
-                  return null;
-                },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please enter a password.";
+                    } else if (value.length < 6) {
+                      return "Password must be at least 6 characters long.";
+                    }
+
+                    return null;
+                  },
                 decoration: InputDecoration(
                   labelText: "Enter Password",
                   border: const OutlineInputBorder(),
@@ -113,30 +117,60 @@ class _LoginScreenState extends State<LoginScreen> {
                         ? Icons.visibility_off
                         : Icons.visibility),
                   ),
-
                 ),
               ),
               const SizedBox(
                 height: 30,
               ),
-              ButtonWidget(buttonText: "Login", onTap: () {
-                if(_formKey.currentState!.validate()){
-                  
-                }
-
-
-              },),
+              authProvider.isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : ButtonWidget(
+                      buttonText: "Login",
+                      onTap: () {
+                        if (_formKey.currentState!.validate()) {
+                          authProvider.login(
+                              UserModel(
+                                  email: _emailController.text,
+                                  password: _passwordController.text),
+                              context).then((value) {
+                                _emailController.clear();
+                                _passwordController.clear();
+                              },);
+                        }
+                      },
+                    ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text("Don't Have Account?"),
+                  const Text("Don't Have Account?"),
                   TextButton(
-
-                      onPressed: () => Navigator.push(context,MaterialPageRoute(builder: (context) => SignupScreen(),),) , child: Text("Signup"))
-
-
+                      onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SignupScreen(),
+                            ),
+                          ),
+                      child: const Text("Signup"))
                 ],
+              ),
+              const SizedBox(height: 20,),
+              InkWell(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const PhoneNumberAuthScreen(),));
+
+                },
+                child: Container(
+                  alignment: Alignment.center,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8,),
+                    border: Border.all(color: Colors.deepPurpleAccent)
+                  ),
+                  child: const Text("Login with phone number",style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold,),),
+                ),
               )
             ],
           ),

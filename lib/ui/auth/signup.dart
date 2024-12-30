@@ -1,5 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:test_cli/model/user_model.dart';
+import 'package:test_cli/provider/login_provider.dart';
 import 'package:test_cli/ui/auth/login_screen.dart';
 import 'package:test_cli/utils/utils.dart';
 import 'package:test_cli/widget/button.dart';
@@ -19,38 +22,39 @@ class _SignupScreenState extends State<SignupScreen> {
   final _auth = FirebaseAuth.instance;
   bool _isLoading = false;
 
-  Future<void> registerUser() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        setState(() {
-          _isLoading = true;
-        });
-
-            await _auth.createUserWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
-        setState(() {
-          _isLoading = false;
-        });
-
-        // Additional steps like storing the user's name and phone in Firestore can be done here.
-
-        Utils().toastMessage("Registration Successfull",Colors.greenAccent,Colors.white);
-
-        // Navigate to another page or clear inputs.
-      } catch (e) {
-        setState(() {
-          _isLoading = false;
-        });
-        Utils().toastMessage(e.toString(),Colors.red,Colors.white);
-
-      }
-    }
-  }
+  // Future<void> registerUser() async {
+  //   if (_formKey.currentState!.validate()) {
+  //     try {
+  //       setState(() {
+  //         _isLoading = true;
+  //       });
+  //
+  //           await _auth.createUserWithEmailAndPassword(
+  //         email: _emailController.text.trim(),
+  //         password: _passwordController.text.trim(),
+  //       );
+  //       setState(() {
+  //         _isLoading = false;
+  //       });
+  //
+  //       // Additional steps like storing the user's name and phone in Firestore can be done here.
+  //
+  //       Utils().toastMessage("Registration Successfull",Colors.greenAccent,Colors.white);
+  //
+  //       // Navigate to another page or clear inputs.
+  //     } catch (e) {
+  //       setState(() {
+  //         _isLoading = false;
+  //       });
+  //       Utils().toastMessage(e.toString(),Colors.red,Colors.white);
+  //
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
+    final authProvider=Provider.of<LoginProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Signup"),
@@ -118,7 +122,7 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(
                 height: 30,
               ),
-              _isLoading
+              authProvider.isLoading
                   ? const Center(
                       child: CircularProgressIndicator(),
                     )
@@ -126,7 +130,10 @@ class _SignupScreenState extends State<SignupScreen> {
                       buttonText: "Signup",
                       onTap: () {
                         if (_formKey.currentState!.validate()) {
-                          registerUser();
+                          authProvider.registration(UserModel(email: _emailController.text,password: _passwordController.text), context).then((value) {
+                            _emailController.clear();
+                            _passwordController.clear();
+                          },);
 
                         }
                       },
