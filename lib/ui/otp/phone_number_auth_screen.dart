@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:test_cli/provider/login_provider.dart';
 import 'package:test_cli/widget/button.dart';
 
 import '../../widget/verify_otp_dialog.dart';
@@ -11,9 +13,12 @@ class PhoneNumberAuthScreen extends StatefulWidget {
 }
 
 class _PhoneNumberAuthScreenState extends State<PhoneNumberAuthScreen> {
-  final _phoneController=TextEditingController();
+  final _phoneController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<LoginProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Login"),
@@ -35,6 +40,7 @@ class _PhoneNumberAuthScreenState extends State<PhoneNumberAuthScreen> {
                 height: 15,
               ),
               TextFormField(
+                keyboardType: TextInputType.number,
                 controller: _phoneController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -45,8 +51,6 @@ class _PhoneNumberAuthScreenState extends State<PhoneNumberAuthScreen> {
 
                   return null;
                 },
-
-
                 decoration: const InputDecoration(
                     contentPadding: EdgeInsets.only(
                       left: 15,
@@ -57,25 +61,17 @@ class _PhoneNumberAuthScreenState extends State<PhoneNumberAuthScreen> {
               const SizedBox(
                 height: 30,
               ),
-              ButtonWidget(
-                buttonText: "Next",
-                onTap: () {
-
-                  showDialog(
-                    barrierDismissible: false,
-                    context: context,
-                    builder: (context) {
-                      return VerifyOtpDialog(
-                        onOtpEntered: (otp) {
-                          // Handle OTP submission logic here
-                          print('Entered OTP: $otp');
-                          Navigator.of(context).pop(); // Close dialog after submission
-                        },
-                      );
-                    },
-                  );
-                },
-              )
+              authProvider.isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : ButtonWidget(
+                      buttonText: "Next",
+                      onTap: () {
+                        authProvider.verifyPhoneNumber(
+                            _phoneController.text, context);
+                      },
+                    )
             ],
           ),
         ),

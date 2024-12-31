@@ -4,9 +4,10 @@ import 'package:pinput/pinput.dart';
 import 'package:test_cli/widget/button.dart';
 
 class VerifyOtpDialog extends StatefulWidget {
-  final void Function(String) onOtpEntered;
+  final void Function(String)? onOtpEntered;
+  final String verificationId;
 
-  VerifyOtpDialog({required this.onOtpEntered});
+  VerifyOtpDialog({ this.onOtpEntered, required this.verificationId});
 
   @override
   _VerifyOtpDialogState createState() => _VerifyOtpDialogState();
@@ -20,7 +21,7 @@ class _VerifyOtpDialogState extends State<VerifyOtpDialog> with CodeAutoFill {
     setState(() {
       otpCode = code!;
     });
-    widget.onOtpEntered(otpCode);
+    // widget.onOtpEntered(otpCode);
   }
 
   @override

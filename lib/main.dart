@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:test_cli/provider/data_provider.dart';
 import 'package:test_cli/provider/login_provider.dart';
 import 'package:test_cli/ui/splash_screen.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +24,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (context) => LoginProvider(),
+        ), ChangeNotifierProvider(
+          create: (context) => DataProvider(),
         ),
       ],
       child: MaterialApp(

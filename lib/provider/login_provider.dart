@@ -2,11 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:test_cli/model/user_model.dart';
-import 'package:test_cli/ui/home_screen.dart';
+import 'package:test_cli/ui/home/home_screen.dart';
 import 'package:test_cli/utils/utils.dart';
+import 'package:test_cli/widget/verify_otp_dialog.dart';
 
 class LoginProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
   bool _isLoading = false;
 
   bool get isLoading => _isLoading;
@@ -17,6 +19,7 @@ class LoginProvider extends ChangeNotifier {
   }
 
   Future<void> login(UserModel user, BuildContext context) async {
+
     try {
       setLoading(true);
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
@@ -28,13 +31,14 @@ class LoginProvider extends ChangeNotifier {
           Colors.green,
           Colors.white,
         );
+
         // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen(),));
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (context) => const HomeScreen(),
+            builder: (context) =>  HomeScreen(uid: _auth.currentUser?.uid ?? "",),
           ),
-          (route) => false,
+              (route) => false,
         );
         // Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen(),));
       } else {
@@ -47,7 +51,6 @@ class LoginProvider extends ChangeNotifier {
 
       setLoading(false);
     } on FirebaseAuthException catch (e) {
-      print("------------->>>${e}");
 
       String message;
       switch (e.code) {
@@ -85,8 +88,8 @@ class LoginProvider extends ChangeNotifier {
   Future<void> registration(UserModel user, BuildContext context) async {
     try {
       UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
-              email: user.email ?? "", password: user.password ?? "");
+      await _auth.createUserWithEmailAndPassword(
+          email: user.email ?? "", password: user.password ?? "");
       if (userCredential.user != null) {
         Utils().toastMessage(
           "Registration Successfull",
@@ -127,18 +130,46 @@ class LoginProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> verifyPhoneNumber(
-      String phoneNumber, BuildContext context) async {
+  Future<void> verifyPhoneNumber(String phoneNumber,
+      BuildContext context) async {
+    setLoading(true);
+
     try {
-      
-      _auth.verifyPhoneNumber(verificationCompleted: verificationCompleted, verificationFailed: verificationFailed, codeSent: codeSent, codeAutoRetrievalTimeout: codeAutoRetrievalTimeout)
+      await _auth.verifyPhoneNumber(
+          phoneNumber: phoneNumber,
+          verificationCompleted: (phoneAuthCredential) {
+            setLoading(false);
+          },
+          verificationFailed: (error) {
+            setLoading(false);
+
+            Utils().toastMessage(error.toString(), Colors.red, Colors.white,);
+          },
+          codeSent: (verificationId, forceResendingToken) {
+            showDialog(
+              barrierDismissible: false,
+              context: context,
+              builder: (context) {
+                return  VerifyOtpDialog(verificationId: verificationId);
+              },
+            );
+
+          },
+          codeAutoRetrievalTimeout: (error) {
+
+            Utils().toastMessage(error.toString(), Colors.red, Colors.white,);
+            setLoading(false);
+
+          },);
     } on FirebaseAuthException catch (e) {
       String message = Utils().getOtpErrorMessage(e.code);
+
+
       setLoading(false);
       Utils().toastMessage(message, Colors.red, Colors.white);
     } catch (e) {
       setLoading(false);
-      
+
       Utils().toastMessage("Something went to wrong", Colors.red, Colors.white);
     }
   }

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:test_cli/ui/home_screen.dart';
+import 'package:test_cli/ui/home/home_screen.dart';
 
 import '../ui/auth/login_screen.dart';
 
@@ -17,7 +17,7 @@ class SplashServices {
           () => Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => HomeScreen(),
+                  builder: (context) => HomeScreen(uid: _auth.currentUser?.uid ?? "",),
                 ),
                 (route) => false,
               ) /*Navigator.push(
